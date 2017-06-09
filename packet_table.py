@@ -1,5 +1,6 @@
 import idautils
 import idaapi
+import re
 
 # search for BC:Login
 PAYLOAD_STORE_ADDR = idc.LocByName("StorePayloadLengthW")
@@ -14,6 +15,8 @@ def getName(address):
     bytesToRead = idc.NextHead(dAddr) - dAddr
     return idaapi.get_ascii_contents(dAddr, bytesToRead, 0)
 
+opList = []
+
 for xref in XrefsTo(PAYLOAD_STORE_ADDR, 0):
     # get the opcode name from rdata
     nameAddr = idc.NextHead(xref.frm)
@@ -27,6 +30,7 @@ for xref in XrefsTo(PAYLOAD_STORE_ADDR, 0):
     if len(opRaw) == 1:
         opRaw = "0" + opRaw
     opcode = "0x" + opRaw
+    opInt = str(int(opRaw, 16)).zfill(4)
 
     # get the payload size
     sizeAddr = idc.PrevHead(opAddr)
@@ -35,4 +39,10 @@ for xref in XrefsTo(PAYLOAD_STORE_ADDR, 0):
         sizeRaw = sizeRaw[:-1]
     size = int(sizeRaw, 16)
 
-    print "public const int {} = {}; // Size: {}".format(name, opcode, size)
+    # add to list
+    #opList.append("{} _sizes[Op.{}] = {};".format(opInt, name, size))
+    opList.append("{} public const int {} = {}; // Size: {}".format(opInt, name, opcode, size))
+
+opList.sort();
+for i in opList:
+    print(re.sub('\d{4}\s','',i))
