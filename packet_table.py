@@ -6,7 +6,7 @@ import re
 PAYLOAD_STORE_ADDR = idc.LocByName("StorePayloadLengthW")
 
 def getOperandText(address):
-    ops = idaapi.ua_outop2(address, 0)
+    ops = idaapi.print_operand(address, 0)
     return idaapi.tag_remove(ops)
 
 def getName(address):
